@@ -1,6 +1,8 @@
 // lib/data/issues.ts
-import { Issue } from '@/types';
-import { IssueFilters } from '@/types';
+import { Issue, IssueFilters, IssueWithRelations } from '@/types';
+import { getStatuses } from '@/data/statuses';
+import { getUsers } from '@/data/users';
+
 const issues: Issue[] = [
   {
     id: 'issue-1',
@@ -32,7 +34,7 @@ const issues: Issue[] = [
     description: null,
     priority: 'urgent',
     statusId: 'status-1',
-    assigneeIds: [],
+    assigneeIds: ['user-3'],
     projectId: 'project-2',
     cycleId: 'cycle-1',
     createdAt: new Date('2024-01-12'),
@@ -40,8 +42,25 @@ const issues: Issue[] = [
   },
 ];
 
-export async function getIssues(): Promise<Issue[]> {
-  return issues;
+export async function getIssues(): Promise<IssueWithRelations[]> {
+  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  return issues.map((issue) => {
+    const status = statuses.find((status) => status.id === issue.statusId);
+    if (!status) {
+      throw new Error(`Status not found for issue ${issue.id}`);
+    }
+    const assignees = users.filter((user) =>
+      issue.assigneeIds.includes(user.id),
+    );
+    if (assignees.length !== issue.assigneeIds.length) {
+      throw new Error(`Assignee not found for issue ${issue.id}`);
+    }
+    return {
+      ...issue,
+      status,
+      assignees: assignees,
+    };
+  });
 }
 
 export async function getIssueById(issueId: string): Promise<Issue | null> {

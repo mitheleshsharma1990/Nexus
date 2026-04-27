@@ -1,5 +1,10 @@
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 
+export type IssueWithRelations = Issue & {
+  status: Status;
+  assignees: User[];
+};
+
 export type Issue = {
   id: string;
   title: string;
