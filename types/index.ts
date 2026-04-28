@@ -3,6 +3,7 @@ export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 export type IssueWithRelations = Issue & {
   status: Status;
   assignees: User[];
+  cycle: Cycle | null;
 };
 
 export type Issue = {

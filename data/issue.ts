@@ -1,7 +1,15 @@
 // lib/data/issues.ts
-import { Issue, IssueFilters, IssueWithRelations, Status, User } from '@/types';
+import {
+  Cycle,
+  Issue,
+  IssueFilters,
+  IssueWithRelations,
+  Status,
+  User,
+} from '@/types';
 import { getStatuses } from '@/data/statuses';
 import { getUsers } from '@/data/users';
+import { getCycles } from '@/data/cycle';
 
 const issues: Issue[] = [
   {
@@ -46,6 +54,7 @@ function resolveIssueRelations(
   issue: Issue,
   statuses: Status[],
   users: User[],
+  cycles: Cycle[],
 ): IssueWithRelations {
   const status = statuses.find((status) => status.id === issue.statusId);
   if (!status) {
@@ -55,25 +64,37 @@ function resolveIssueRelations(
   if (assignees.length !== issue.assigneeIds.length) {
     throw new Error(`Assignee not found for issue ${issue.id}`);
   }
+  const cycleData = cycles.find((cycle) => cycle.id === issue.cycleId);
   return {
     ...issue,
     status,
     assignees: assignees,
+    cycle: cycleData || null,
   };
 }
 
 export async function getIssues(): Promise<IssueWithRelations[]> {
-  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
-  return issues.map((issue) => resolveIssueRelations(issue, statuses, users));
+  const [statuses, users, cycles] = await Promise.all([
+    getStatuses(),
+    getUsers(),
+    getCycles(),
+  ]);
+  return issues.map((issue) =>
+    resolveIssueRelations(issue, statuses, users, cycles),
+  );
 }
 
 export async function getIssueById(
   issueId: string,
 ): Promise<IssueWithRelations | null> {
-  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  const [statuses, users, cycles] = await Promise.all([
+    getStatuses(),
+    getUsers(),
+    getCycles(),
+  ]);
   const issue = issues.find((issue) => issue.id === issueId);
   if (!issue) return null;
-  return resolveIssueRelations(issue, statuses, users);
+  return resolveIssueRelations(issue, statuses, users, cycles);
 }
 
 export async function getIssuesByProject(projectId: string): Promise<Issue[]> {
@@ -93,7 +114,11 @@ export async function getIssuesByAssignee(
 export async function getFilteredIssues(
   filters: IssueFilters,
 ): Promise<IssueWithRelations[]> {
-  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  const [statuses, users, cycles] = await Promise.all([
+    getStatuses(),
+    getUsers(),
+    getCycles(),
+  ]);
   return issues
     .filter((issue) => {
       if (filters.priority && filters.priority !== issue.priority) return false;
@@ -106,20 +131,6 @@ export async function getFilteredIssues(
       return true;
     })
     .map((issue) => {
-      const status = statuses.find((status) => status.id === issue.statusId);
-      if (!status) {
-        throw new Error(`Status not found for issue ${issue.id}`);
-      }
-      const assignees = users.filter((user) =>
-        issue.assigneeIds.includes(user.id),
-      );
-      if (assignees.length !== issue.assigneeIds.length) {
-        throw new Error(`Assignee not found for issue ${issue.id}`);
-      }
-      return {
-        ...issue,
-        status,
-        assignees: assignees,
-      };
+      return resolveIssueRelations(issue, statuses, users, cycles);
     });
 }

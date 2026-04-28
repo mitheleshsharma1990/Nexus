@@ -7,7 +7,7 @@ export default function DetailsPanel({ issue, comments }: { issue: IssueWithRela
   rounded-xl bg-[#3f3d38]">
     <h1 className="text-2xl font-bold mb-4">Issue Details</h1>
     <CloseDetailsButton />
-    <p className="text-lg font-semibold">{issue.cycleId}</p>
+    <p className="text-lg font-semibold">{issue.cycle?.name || 'No cycle assigned'}</p>
     <hr className="my-4 border-t border-gray-300" />
     <p className="text-gray-300">{issue.title}</p>
     <p className="text-sm text-gray-400">Status: {issue.status.name}</p>
