@@ -63,8 +63,25 @@ export async function getIssues(): Promise<IssueWithRelations[]> {
   });
 }
 
-export async function getIssueById(issueId: string): Promise<Issue | null> {
-  return issues.find((issue) => issue.id === issueId) ?? null;
+export async function getIssueById(
+  issueId: string,
+): Promise<IssueWithRelations | null> {
+  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  const issue = issues.find((issue) => issue.id === issueId);
+  if (!issue) return null;
+  const status = statuses.find((status) => status.id === issue.statusId);
+  if (!status) {
+    throw new Error(`Status not found for issue ${issue.id}`);
+  }
+  const assignees = users.filter((user) => issue.assigneeIds.includes(user.id));
+  if (assignees.length !== issue.assigneeIds.length) {
+    throw new Error(`Assignee not found for issue ${issue.id}`);
+  }
+  return {
+    ...issue,
+    status,
+    assignees: assignees,
+  };
 }
 
 export async function getIssuesByProject(projectId: string): Promise<Issue[]> {

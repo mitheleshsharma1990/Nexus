@@ -4,6 +4,7 @@ import IssuesList from "@/components/issues/IssuesList";
 import { getFilteredIssues, getIssueById } from "@/data/issue";
 import DetailsPanel from "@/components/layout/DetailsPanel";
 import { Priority } from "@/types";
+import { getCommentsByIssueId } from "@/data/comments";
 
 
 type IssuesPageProps = {
@@ -26,6 +27,7 @@ export default async function IssuesPage({ searchParams }:
       ? getIssueById(issueId)
       : null
   ])
+  const comments = selectedIssue ? await getCommentsByIssueId(selectedIssue.id) : []
   console.log(selectedIssue?.title)
   return <div className="flex flex-row h-19/20 w-5/6 m-4">
     <div className="flex flex-col gap-4 bg-[#224b3a] 
@@ -38,7 +40,7 @@ export default async function IssuesPage({ searchParams }:
       </ul>
       <IssuesList issues={issues} />
     </div>
-    {selectedIssue && <DetailsPanel issue={selectedIssue} />}
+    {selectedIssue && <DetailsPanel issue={selectedIssue} comments={comments} />}
   </div>
 
 

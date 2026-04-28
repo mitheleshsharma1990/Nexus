@@ -26,7 +26,7 @@ export default function CloseDetailsButton() {
         stroke="currentColor"
         className="size-5"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
       </svg>
     </button>
 
