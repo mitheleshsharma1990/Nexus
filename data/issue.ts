@@ -1,5 +1,5 @@
 // lib/data/issues.ts
-import { Issue, IssueFilters, IssueWithRelations } from '@/types';
+import { Issue, IssueFilters, IssueWithRelations, Status, User } from '@/types';
 import { getStatuses } from '@/data/statuses';
 import { getUsers } from '@/data/users';
 
@@ -42,33 +42,11 @@ const issues: Issue[] = [
   },
 ];
 
-export async function getIssues(): Promise<IssueWithRelations[]> {
-  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
-  return issues.map((issue) => {
-    const status = statuses.find((status) => status.id === issue.statusId);
-    if (!status) {
-      throw new Error(`Status not found for issue ${issue.id}`);
-    }
-    const assignees = users.filter((user) =>
-      issue.assigneeIds.includes(user.id),
-    );
-    if (assignees.length !== issue.assigneeIds.length) {
-      throw new Error(`Assignee not found for issue ${issue.id}`);
-    }
-    return {
-      ...issue,
-      status,
-      assignees: assignees,
-    };
-  });
-}
-
-export async function getIssueById(
-  issueId: string,
-): Promise<IssueWithRelations | null> {
-  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
-  const issue = issues.find((issue) => issue.id === issueId);
-  if (!issue) return null;
+function resolveIssueRelations(
+  issue: Issue,
+  statuses: Status[],
+  users: User[],
+): IssueWithRelations {
   const status = statuses.find((status) => status.id === issue.statusId);
   if (!status) {
     throw new Error(`Status not found for issue ${issue.id}`);
@@ -82,6 +60,20 @@ export async function getIssueById(
     status,
     assignees: assignees,
   };
+}
+
+export async function getIssues(): Promise<IssueWithRelations[]> {
+  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  return issues.map((issue) => resolveIssueRelations(issue, statuses, users));
+}
+
+export async function getIssueById(
+  issueId: string,
+): Promise<IssueWithRelations | null> {
+  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  const issue = issues.find((issue) => issue.id === issueId);
+  if (!issue) return null;
+  return resolveIssueRelations(issue, statuses, users);
 }
 
 export async function getIssuesByProject(projectId: string): Promise<Issue[]> {

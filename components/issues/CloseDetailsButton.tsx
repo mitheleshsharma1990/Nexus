@@ -22,7 +22,7 @@ export default function CloseDetailsButton() {
         xmlns="http://w3.org"
         fill="none"
         viewBox="0 0 24 24"
-        stroke-width="2.5"
+        strokeWidth="2.5"
         stroke="currentColor"
         className="size-5"
       >
