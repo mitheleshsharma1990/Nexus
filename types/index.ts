@@ -90,7 +90,7 @@ export type IssueFilters = {
   cycleId?: string;
   statusId?: string;
   assigneeId?: string;
-  priority?: Issue['priority'];
+  priority?: Priority;
 };
 
 export type Workspace = {

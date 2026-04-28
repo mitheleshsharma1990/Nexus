@@ -83,15 +83,34 @@ export async function getIssuesByAssignee(
 
 export async function getFilteredIssues(
   filters: IssueFilters,
-): Promise<Issue[]> {
-  return issues.filter((issue) => {
-    if (filters.priority && filters.priority !== issue.priority) return false;
-    if (filters.cycleId && filters.cycleId !== issue.cycleId) return false;
-    if (filters.projectId && filters.projectId !== issue.projectId)
-      return false;
-    if (filters.assigneeId && !issue.assigneeIds.includes(filters.assigneeId))
-      return false;
-    if (filters.statusId && filters.statusId !== issue.statusId) return false;
-    return true;
-  });
+): Promise<IssueWithRelations[]> {
+  const [statuses, users] = await Promise.all([getStatuses(), getUsers()]);
+  return issues
+    .filter((issue) => {
+      if (filters.priority && filters.priority !== issue.priority) return false;
+      if (filters.cycleId && filters.cycleId !== issue.cycleId) return false;
+      if (filters.projectId && filters.projectId !== issue.projectId)
+        return false;
+      if (filters.assigneeId && !issue.assigneeIds.includes(filters.assigneeId))
+        return false;
+      if (filters.statusId && filters.statusId !== issue.statusId) return false;
+      return true;
+    })
+    .map((issue) => {
+      const status = statuses.find((status) => status.id === issue.statusId);
+      if (!status) {
+        throw new Error(`Status not found for issue ${issue.id}`);
+      }
+      const assignees = users.filter((user) =>
+        issue.assigneeIds.includes(user.id),
+      );
+      if (assignees.length !== issue.assigneeIds.length) {
+        throw new Error(`Assignee not found for issue ${issue.id}`);
+      }
+      return {
+        ...issue,
+        status,
+        assignees: assignees,
+      };
+    });
 }
