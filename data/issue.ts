@@ -48,6 +48,93 @@ const issues: Issue[] = [
     createdAt: new Date('2024-01-12'),
     dueDate: new Date('2024-01-18'),
   },
+  {
+    id: 'issue-4',
+    title: 'Implement dark mode',
+    description: 'Add dark mode support to the application',
+    priority: 'low',
+    statusId: 'status-3',
+    assigneeIds: [],
+    projectId: 'project-2',
+    cycleId: null,
+    createdAt: new Date('2024-01-13'),
+    dueDate: null,
+  },
+  {
+    id: 'issue-5',
+    title: 'Database schema optimization',
+    description: 'Optimize database schema for faster queries',
+    priority: 'high',
+    statusId: 'status-2',
+    assigneeIds: ['user-1', 'user-2'],
+    projectId: 'project-3',
+    cycleId: 'cycle-2',
+    createdAt: new Date('2024-01-14'),
+    dueDate: new Date('2024-01-25'),
+  },
+  {
+    id: 'issue-6',
+    title: 'Set up CI/CD pipeline',
+    description: 'Automate testing and deployment with GitHub Actions',
+    priority: 'medium',
+    statusId: 'status-1',
+    assigneeIds: ['user-2'],
+    projectId: 'project-3',
+    cycleId: null,
+    createdAt: new Date('2024-01-15'),
+    dueDate: null,
+  },
+  {
+    id: 'issue-7',
+    title: 'User profile page',
+    description: 'Create a user profile page with editable fields',
+    priority: 'low',
+    statusId: 'status-3',
+    assigneeIds: ['user-3'],
+    projectId: 'project-1',
+    cycleId: 'cycle-2',
+    createdAt: new Date('2024-01-16'),
+    dueDate: new Date('2024-01-30'),
+  },
+  {
+    id: 'issue-8',
+    title: 'Implement search functionality',
+    description:
+      'Add search functionality to the application using Elasticsearch',
+    priority: 'urgent',
+    statusId: 'status-1',
+    assigneeIds: ['user-1', 'user-3'],
+    projectId: 'project-2',
+    cycleId: null,
+    createdAt: new Date('2024-01-17'),
+    dueDate: new Date('2024-01-22'),
+  },
+  {
+    id: 'issue-9',
+    title: 'Refactor codebase',
+    description:
+      'Refactor codebase to improve maintainability and reduce technical debt',
+    priority: 'medium',
+    statusId: 'status-2',
+    assigneeIds: ['user-2'],
+    projectId: 'project-3',
+    cycleId: 'cycle-1',
+    createdAt: new Date('2024-01-18'),
+    dueDate: new Date('2024-01-28'),
+  },
+  {
+    id: 'issue-10',
+    title: 'Add unit tests',
+    description:
+      'Increase test coverage by adding unit tests for critical components',
+    priority: 'high',
+    statusId: 'status-1',
+    assigneeIds: ['user-1', 'user-2', 'user-3'],
+    projectId: 'project-1',
+    cycleId: null,
+    createdAt: new Date('2024-01-19'),
+    dueDate: new Date('2024-01-29'),
+  },
 ];
 
 function resolveIssueRelations(
@@ -55,6 +142,7 @@ function resolveIssueRelations(
   statuses: Status[],
   users: User[],
   cycles: Cycle[],
+  priorities: string[] = ['low', 'medium', 'high', 'urgent'],
 ): IssueWithRelations {
   const status = statuses.find((status) => status.id === issue.statusId);
   if (!status) {
@@ -121,13 +209,24 @@ export async function getFilteredIssues(
   ]);
   return issues
     .filter((issue) => {
-      if (filters.priority && filters.priority !== issue.priority) return false;
+      if (
+        filters.priorities?.length &&
+        !filters.priorities.includes(issue.priority)
+      )
+        return false;
       if (filters.cycleId && filters.cycleId !== issue.cycleId) return false;
       if (filters.projectId && filters.projectId !== issue.projectId)
         return false;
-      if (filters.assigneeId && !issue.assigneeIds.includes(filters.assigneeId))
+      if (
+        filters.assigneeIds?.length &&
+        !filters.assigneeIds.some((id) => issue.assigneeIds.includes(id))
+      )
         return false;
-      if (filters.statusId && filters.statusId !== issue.statusId) return false;
+      if (
+        filters.statusIds?.length &&
+        !filters.statusIds.includes(issue.statusId)
+      )
+        return false;
       return true;
     })
     .map((issue) => {

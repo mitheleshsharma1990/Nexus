@@ -89,9 +89,9 @@ export type StatusTransition = {
 export type IssueFilters = {
   projectId?: string;
   cycleId?: string;
-  statusId?: string;
-  assigneeId?: string;
-  priority?: Priority;
+  statusIds?: string[];
+  assigneeIds?: string[];
+  priorities?: Priority[];
 };
 
 export type Workspace = {

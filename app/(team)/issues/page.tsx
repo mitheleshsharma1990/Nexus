@@ -3,32 +3,40 @@
 import IssuesList from "@/components/issues/IssuesList";
 import { getFilteredIssues, getIssueById } from "@/data/issue";
 import DetailsPanel from "@/components/layout/DetailsPanel";
-import { Priority } from "@/types";
 import { getCommentsByIssueId } from "@/data/comments";
-
+import FilterList from "@/components/filters/FilterList";
+import { getStatuses } from "@/data/statuses";
+import { getUsers } from "@/data/users";
+import { toArray } from '@/lib/utils/param';
+import { Priority } from "@/types";
 
 type IssuesPageProps = {
   searchParams: Promise<{
     issueId?: string
-    statusId?: string
-    priority?: string
+    statusId?: string | string[]
+    priority?: string | string[]
+    assigneeId?: string | string[]
   }>
 }
 
 export default async function IssuesPage({ searchParams }:
   IssuesPageProps) {
-  const { issueId, statusId, priority } = await searchParams
-  const [issues, selectedIssue] = await Promise.all([
+  const { issueId, statusId, priority, assigneeId } = await searchParams
+  const [issues, selectedIssue, statuses, users] = await Promise.all([
     getFilteredIssues({
-      statusId: statusId,
-      priority: priority as Priority | undefined,
+      statusIds: toArray(statusId),
+      priorities: toArray(priority) as Priority[],
+      assigneeIds: toArray(assigneeId),
     }),
     issueId
       ? getIssueById(issueId)
-      : null
+      : null,
+    getStatuses(),
+    getUsers()
   ])
-  const comments = selectedIssue ? await getCommentsByIssueId(selectedIssue.id) : []
-  console.log(selectedIssue?.title)
+  const comments = selectedIssue ? await getCommentsByIssueId(selectedIssue.id)
+    : []
+
   return <div className="flex flex-row h-19/20 w-5/6 m-4">
     <div className="flex flex-col gap-4 bg-[#224b3a] 
     border rounded-xl p-4 flex-1">
@@ -38,6 +46,7 @@ export default async function IssuesPage({ searchParams }:
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Board</li>
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Roadmap</li>
       </ul>
+      <FilterList statuses={statuses} users={users} />
       <IssuesList issues={issues} />
     </div>
     {selectedIssue && <DetailsPanel issue={selectedIssue} comments={comments} />}
