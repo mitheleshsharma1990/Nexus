@@ -142,7 +142,6 @@ function resolveIssueRelations(
   statuses: Status[],
   users: User[],
   cycles: Cycle[],
-  priorities: string[] = ['low', 'medium', 'high', 'urgent'],
 ): IssueWithRelations {
   const status = statuses.find((status) => status.id === issue.statusId);
   if (!status) {
