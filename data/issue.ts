@@ -11,7 +11,7 @@ import { getStatuses } from '@/data/statuses';
 import { getUsers } from '@/data/users';
 import { getCycles } from '@/data/cycle';
 
-const issues: Issue[] = [
+export const issues: Issue[] = [
   {
     id: 'issue-1',
     title: 'Set up authentication service',

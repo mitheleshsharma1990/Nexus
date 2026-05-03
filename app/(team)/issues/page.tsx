@@ -9,6 +9,9 @@ import { getStatuses } from "@/data/statuses";
 import { getUsers } from "@/data/users";
 import { toArray } from '@/lib/utils/param';
 import { Priority } from "@/types";
+import { getCycles } from "@/data/cycle";
+import { getProjects } from "@/data/projects";
+import NewIssueButton from "@/components/issues/NewIssueButton";
 
 type IssuesPageProps = {
   searchParams: Promise<{
@@ -22,7 +25,7 @@ type IssuesPageProps = {
 export default async function IssuesPage({ searchParams }:
   IssuesPageProps) {
   const { issueId, statusId, priority, assigneeId } = await searchParams
-  const [issues, selectedIssue, statuses, users] = await Promise.all([
+  const [issues, selectedIssue, statuses, users, cycles, projects] = await Promise.all([
     getFilteredIssues({
       statusIds: toArray(statusId),
       priorities: toArray(priority) as Priority[],
@@ -32,8 +35,15 @@ export default async function IssuesPage({ searchParams }:
       ? getIssueById(issueId)
       : null,
     getStatuses(),
-    getUsers()
+    getUsers(),
+    getCycles(),
+    getProjects()
   ])
+  const statusOptions = statuses.map(s => ({ id: s.id, name: s.name }))
+  const projectOptions = projects.map(p => ({ id: p.id, name: p.name }))
+  const cycleOptions = cycles.map(c => ({ id: c.id, name: c.name }))
+  const userOptions = users.map(u => ({ id: u.id, name: u.name }))
+
   const comments = selectedIssue ? await getCommentsByIssueId(selectedIssue.id)
     : []
 
@@ -46,6 +56,11 @@ export default async function IssuesPage({ searchParams }:
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Board</li>
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Roadmap</li>
       </ul>
+      <NewIssueButton statuses={statusOptions}
+        users={userOptions}
+        projectIds={projectOptions}
+        cycleIds={cycleOptions} />
+
       <FilterList statuses={statuses} users={users} />
       <IssuesList issues={issues} />
     </div>
