@@ -1,3 +1,4 @@
+import { addDelay } from '@/lib/utils/param';
 import { Project } from '@/types';
 
 export const projects: Project[] = [
@@ -24,7 +25,7 @@ export const projects: Project[] = [
 ];
 
 export async function getProjects(): Promise<Project[]> {
-  return projects;
+  return addDelay<Project[]>(Promise.resolve(projects), 500); // Simulate network delay
 }
 
 export async function getProjectById(

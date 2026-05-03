@@ -1,3 +1,4 @@
+import { addDelay } from '@/lib/utils/param';
 import { Status } from '@/types';
 
 const statuses: Status[] = [
@@ -28,9 +29,12 @@ const statuses: Status[] = [
 ];
 
 export async function getStatuses(): Promise<Status[]> {
-  return statuses;
+  return addDelay<Status[]>(Promise.resolve(statuses), 500); // Simulate network delay
 }
 
 export async function getStatusById(statusId: string): Promise<Status | null> {
-  return statuses.find((status) => status.id === statusId) ?? null;
+  return addDelay<Status | null>(
+    Promise.resolve(statuses.find((status) => status.id === statusId) ?? null),
+    500,
+  ); // Simulate network delay
 }

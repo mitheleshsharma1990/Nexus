@@ -2,7 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import NewIssueForm from "@/components/issues/NewIssueForm";
+import dynamic from "next/dynamic";
+// import NewIssueForm from "./NewIssueForm";
+
+const NewIssueModal = dynamic(() => import("./NewIssueForm"))
 
 export default function NewIssueButton({ statuses, users, projectIds, cycleIds }: {
   statuses: { id: string, name: string }[],
@@ -17,7 +20,7 @@ export default function NewIssueButton({ statuses, users, projectIds, cycleIds }
       <button onClick={() => setIsOpen(true)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
         + New Issue
       </button>
-      {isOpen && <NewIssueForm
+      {isOpen && <NewIssueModal
         statuses={statuses}
         users={users} projectIds={projectIds}
         cycleIds={cycleIds}

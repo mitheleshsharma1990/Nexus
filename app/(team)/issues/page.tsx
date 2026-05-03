@@ -1,7 +1,6 @@
 
 
 import IssuesList from "@/components/issues/IssuesList";
-import { getFilteredIssues, getIssueById } from "@/data/issue";
 import DetailsPanel from "@/components/layout/DetailsPanel";
 import { getCommentsByIssueId } from "@/data/comments";
 import FilterList from "@/components/filters/FilterList";
@@ -12,6 +11,8 @@ import { Priority } from "@/types";
 import { getCycles } from "@/data/cycle";
 import { getProjects } from "@/data/projects";
 import NewIssueButton from "@/components/issues/NewIssueButton";
+import { Suspense } from "react";
+import { getIssueById } from "@/data/issue";
 
 type IssuesPageProps = {
   searchParams: Promise<{
@@ -25,12 +26,7 @@ type IssuesPageProps = {
 export default async function IssuesPage({ searchParams }:
   IssuesPageProps) {
   const { issueId, statusId, priority, assigneeId } = await searchParams
-  const [issues, selectedIssue, statuses, users, cycles, projects] = await Promise.all([
-    getFilteredIssues({
-      statusIds: toArray(statusId),
-      priorities: toArray(priority) as Priority[],
-      assigneeIds: toArray(assigneeId),
-    }),
+  const [selectedIssue, statuses, users, cycles, projects] = await Promise.all([
     issueId
       ? getIssueById(issueId)
       : null,
@@ -56,13 +52,18 @@ export default async function IssuesPage({ searchParams }:
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Board</li>
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Roadmap</li>
       </ul>
+
       <NewIssueButton statuses={statusOptions}
         users={userOptions}
         projectIds={projectOptions}
         cycleIds={cycleOptions} />
 
       <FilterList statuses={statuses} users={users} />
-      <IssuesList issues={issues} />
+
+      <Suspense fallback={<div>Loading issues...</div>}>
+        <IssuesList statusIds={toArray(statusId)} priorities={toArray(priority) as Priority[]} assigneeIds={toArray(assigneeId)} />
+      </Suspense>
+
     </div>
     {selectedIssue && <DetailsPanel issue={selectedIssue} comments={comments} />}
   </div>

@@ -10,6 +10,7 @@ import {
 import { getStatuses } from '@/data/statuses';
 import { getUsers } from '@/data/users';
 import { getCycles } from '@/data/cycle';
+import { addDelay } from '@/lib/utils/param';
 
 export const issues: Issue[] = [
   {
@@ -166,9 +167,10 @@ export async function getIssues(): Promise<IssueWithRelations[]> {
     getUsers(),
     getCycles(),
   ]);
-  return issues.map((issue) =>
+  const resolvedIssues = issues.map((issue) =>
     resolveIssueRelations(issue, statuses, users, cycles),
   );
+  return addDelay<IssueWithRelations[]>(Promise.resolve(resolvedIssues), 500); // Simulate network delay
 }
 
 export async function getIssueById(
@@ -181,7 +183,11 @@ export async function getIssueById(
   ]);
   const issue = issues.find((issue) => issue.id === issueId);
   if (!issue) return null;
-  return resolveIssueRelations(issue, statuses, users, cycles);
+  const resolvedIssue = resolveIssueRelations(issue, statuses, users, cycles);
+  return addDelay<IssueWithRelations | null>(
+    Promise.resolve(resolvedIssue),
+    500,
+  ); // Simulate network delay
 }
 
 export async function getIssuesByProject(projectId: string): Promise<Issue[]> {
@@ -206,7 +212,7 @@ export async function getFilteredIssues(
     getUsers(),
     getCycles(),
   ]);
-  return issues
+  const filteredIssues = issues
     .filter((issue) => {
       if (
         filters.priorities?.length &&
@@ -231,4 +237,6 @@ export async function getFilteredIssues(
     .map((issue) => {
       return resolveIssueRelations(issue, statuses, users, cycles);
     });
+
+  return addDelay<IssueWithRelations[]>(Promise.resolve(filteredIssues), 3000); // Simulate network delay
 }

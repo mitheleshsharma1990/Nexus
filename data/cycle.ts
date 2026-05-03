@@ -1,3 +1,4 @@
+import { addDelay } from '@/lib/utils/param';
 import { Cycle } from '@/types';
 
 const cycles: Cycle[] = [
@@ -49,5 +50,5 @@ const cycles: Cycle[] = [
 ];
 
 export async function getCycles(): Promise<Cycle[]> {
-  return cycles;
+  return addDelay<Cycle[]>(Promise.resolve(cycles), 500); // Simulate network delay
 }
