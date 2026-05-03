@@ -1,9 +1,5 @@
 "use client";
 
-
-
-
-
 import { useState, useEffect } from "react";
 import { CreateIssueInput, createIssue } from "@/lib/actions/issues"
 import { Priority } from "@/types";

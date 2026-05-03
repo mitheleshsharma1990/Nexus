@@ -13,5 +13,5 @@ export default function StatusChip({ status }: { status: Status }) {
   };
 
   const colorClass = statusColors[status.name] || 'bg-gray-500';
-  return <p className={`${baseClass} ${colorClass}`}>{status.name}</p>
+  return <span className={`${baseClass} ${colorClass}`}>{status.name}</span>
 }

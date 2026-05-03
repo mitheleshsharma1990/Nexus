@@ -1,5 +1,7 @@
 import { IssueWithRelations, Comment } from "@/types"
 import CloseDetailsButton from "../issues/CloseDetailsButton";
+import StatusChip from "../ui/StatusChip";
+import PriorityChip from "../ui/PriorityChip";
 
 export default function DetailsPanel({ issue, comments }: { issue: IssueWithRelations, comments: Comment[] }) {
 
@@ -9,10 +11,10 @@ export default function DetailsPanel({ issue, comments }: { issue: IssueWithRela
     <CloseDetailsButton />
     <p className="text-lg font-semibold">{issue.cycle?.name || 'No cycle assigned'}</p>
     <hr className="my-4 border-t border-gray-300" />
-    <p className="text-gray-300">{issue.title}</p>
-    <p className="text-sm text-gray-400">Status: {issue.status.name}</p>
-    <p className="text-sm text-gray-400">Assignee: {issue.assignees.map((assignee) => assignee.name).join(", ")}</p>
-    <p className="text-sm text-gray-400">Priority: {issue.priority}</p>
+    <p className="text-gray-300 mb-2">{issue.title}</p>
+    <p className="text-sm text-gray-400 mb-2">Status: <StatusChip status={issue.status} /> </p>
+    <p className="text-sm text-gray-400 mb-2">Assignee: {issue.assignees.map((assignee) => assignee.name).join(", ")}</p>
+    <p className="text-sm text-gray-400 mb-2">Priority: <PriorityChip priority={issue.priority} /></p>
     <hr className="my-4 border-t border-gray-300" />
     <p className="text-2xl font-bold mb-1">Description</p>
     <p className="text-sm text-gray-400 mb-4">{issue.description}</p>

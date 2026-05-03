@@ -11,5 +11,5 @@ export default function PriorityChip({ priority }: { priority: string }) {
   };
 
   const colorClass = priorityColors[priority] || 'bg-gray-500';
-  return <p className={`${baseClass} ${colorClass}`}>{priority}</p>
+  return <span className={`${baseClass} ${colorClass}`}>{priority}</span>
 }
