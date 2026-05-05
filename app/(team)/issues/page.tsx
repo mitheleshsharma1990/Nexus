@@ -2,17 +2,15 @@
 
 import IssuesList from "@/components/issues/IssuesList";
 import DetailsPanel from "@/components/layout/DetailsPanel";
-import { getCommentsByIssueId } from "@/data/comments";
 import FilterList from "@/components/filters/FilterList";
-import { getStatuses } from "@/data/statuses";
-import { getUsers } from "@/data/users";
+
 import { toArray } from '@/lib/utils/param';
 import { Priority } from "@/types";
-import { getCycles } from "@/data/cycle";
-import { getProjects } from "@/data/projects";
-import NewIssueButton from "@/components/issues/NewIssueButton";
+
+import NewIssueContainer from "@/components/issues/NewIssueContainer";
 import { Suspense } from "react";
-import { getIssueById } from "@/data/issue";
+import { FilterBar } from "@/components/filters/FilterBar";
+
 
 type IssuesPageProps = {
   searchParams: Promise<{
@@ -26,22 +24,6 @@ type IssuesPageProps = {
 export default async function IssuesPage({ searchParams }:
   IssuesPageProps) {
   const { issueId, statusId, priority, assigneeId } = await searchParams
-  const [selectedIssue, statuses, users, cycles, projects] = await Promise.all([
-    issueId
-      ? getIssueById(issueId)
-      : null,
-    getStatuses(),
-    getUsers(),
-    getCycles(),
-    getProjects()
-  ])
-  const statusOptions = statuses.map(s => ({ id: s.id, name: s.name }))
-  const projectOptions = projects.map(p => ({ id: p.id, name: p.name }))
-  const cycleOptions = cycles.map(c => ({ id: c.id, name: c.name }))
-  const userOptions = users.map(u => ({ id: u.id, name: u.name }))
-
-  const comments = selectedIssue ? await getCommentsByIssueId(selectedIssue.id)
-    : []
 
   return <div className="flex flex-row h-19/20 w-5/6 m-4">
     <div className="flex flex-col gap-4 bg-[#224b3a] 
@@ -53,19 +35,27 @@ export default async function IssuesPage({ searchParams }:
         <li className="px-3 py-.5 bg-[#344E41] rounded text-white">Roadmap</li>
       </ul>
 
-      <NewIssueButton statuses={statusOptions}
-        users={userOptions}
-        projectIds={projectOptions}
-        cycleIds={cycleOptions} />
+      <Suspense fallback={<div>Loading new Issue Button...</div>}>
+        <NewIssueContainer />
+      </Suspense>
 
-      <FilterList statuses={statuses} users={users} />
+      <Suspense fallback={<div>Loading filters...</div>}>
+        <FilterBar />
+      </Suspense>
 
       <Suspense fallback={<div>Loading issues...</div>}>
         <IssuesList statusIds={toArray(statusId)} priorities={toArray(priority) as Priority[]} assigneeIds={toArray(assigneeId)} />
       </Suspense>
 
     </div>
-    {selectedIssue && <DetailsPanel issue={selectedIssue} comments={comments} />}
+    {issueId && <div className="h-full w-2/6 ml-4 p-4 border 
+        rounded-xl bg-[#3f3d38]">
+      <Suspense fallback={<div>Loading issue details...</div>}>
+        <DetailsPanel issueId={issueId} />
+      </Suspense>
+    </div>
+    }
+
   </div>
 
 

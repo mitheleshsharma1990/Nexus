@@ -3,9 +3,11 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-// import NewIssueForm from "./NewIssueForm";
 
-const NewIssueModal = dynamic(() => import("./NewIssueForm"))
+const NewIssueModal = dynamic(() => import("./NewIssueForm"), {
+  ssr: false,
+  loading: () => null,
+})
 
 export default function NewIssueButton({ statuses, users, projectIds, cycleIds }: {
   statuses: { id: string, name: string }[],

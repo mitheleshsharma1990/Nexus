@@ -1,28 +1,48 @@
-import { IssueWithRelations, Comment } from "@/types"
+
+
+
+import { Status, Priority } from "@/types"
 import CloseDetailsButton from "../issues/CloseDetailsButton";
 import StatusChip from "../ui/StatusChip";
 import PriorityChip from "../ui/PriorityChip";
+import { getIssueById } from "@/data/issue";
+import { getCommentsByIssueId } from "@/data/comments";
 
-export default function DetailsPanel({ issue, comments }: { issue: IssueWithRelations, comments: Comment[] }) {
 
-  return <div className="h-full w-2/6 ml-4 p-4 border 
-  rounded-xl bg-[#3f3d38]">
+export default async function DetailsPanel({ issueId }: { issueId: string }) {
+  const [issue, comments] = await Promise.all([
+    getIssueById(issueId),
+    getCommentsByIssueId(issueId)
+  ])
+
+  if (!issue) return <div>Issue not found</div>
+
+  let status = {} as Status
+  let priority = "low" as Priority
+  if (issue && issue.status) {
+    status = issue.status
+  }
+  if (issue && issue.priority) {
+    priority = issue.priority
+  }
+
+  return <>
     <h1 className="text-2xl font-bold mb-4">Issue Details</h1>
     <CloseDetailsButton />
-    <p className="text-lg font-semibold">{issue.cycle?.name || 'No cycle assigned'}</p>
+    <p className="text-lg font-semibold">{issue?.cycle?.name || 'No cycle assigned'}</p>
     <hr className="my-4 border-t border-gray-300" />
-    <p className="text-gray-300 mb-2">{issue.title}</p>
-    <p className="text-sm text-gray-400 mb-2">Status: <StatusChip status={issue.status} /> </p>
-    <p className="text-sm text-gray-400 mb-2">Assignee: {issue.assignees.map((assignee) => assignee.name).join(", ")}</p>
-    <p className="text-sm text-gray-400 mb-2">Priority: <PriorityChip priority={issue.priority} /></p>
+    <p className="text-gray-300 mb-2">{issue?.title}</p>
+    <p className="text-sm text-gray-400 mb-2">Status: <StatusChip status={status} /> </p>
+    <p className="text-sm text-gray-400 mb-2">Assignee: {issue?.assignees?.map((assignee) => assignee.name).join(", ")}</p>
+    <p className="text-sm text-gray-400 mb-2">Priority: <PriorityChip priority={priority} /></p>
     <hr className="my-4 border-t border-gray-300" />
     <p className="text-2xl font-bold mb-1">Description</p>
-    <p className="text-sm text-gray-400 mb-4">{issue.description}</p>
+    <p className="text-sm text-gray-400 mb-4">{issue?.description}</p>
     <p className="text-2xl font-bold mb-1">Comments ({comments.length})</p>
     {comments.map((comment) => (
       <p className="text-sm text-gray-400 mb-4" key={comment.id}>
         <input className="w-full border rounded-sm border-gray-300 py-1 px-2" type="text" defaultValue={comment.description} />
       </p>
     ))}
-  </div>
+  </>
 }

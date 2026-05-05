@@ -6,6 +6,7 @@ import { FilterChipProps } from "@/types/filters"
 import FilterDropdown from "./FilterDropdown"
 import FilterChip from "../ui/FilterChip"
 import { useRouter, useSearchParams } from "next/navigation"
+import { startTransition, useOptimistic } from "react"
 
 type FilterBarProps = {
   statuses: Status[]
@@ -18,6 +19,11 @@ const priorityDropdownOptions = [
   { id: 'urgent', label: 'Urgent' }
 ]
 
+type FilterAction =
+  | { type: 'ADD'; key: string; id: string }
+  | { type: 'REMOVE'; key: string; id: string }
+  | { type: 'CLEAR' }
+
 export default function FilterList({ statuses, users }: FilterBarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -25,35 +31,83 @@ export default function FilterList({ statuses, users }: FilterBarProps) {
   const selectedAssigneeIds = searchParams.getAll('assigneeId')
   const selectedPriorityIds = searchParams.getAll('priority')
 
+  const [optimisticFilters, setOptimisticFilters] = useOptimistic(
+    {
+      statusIds: selectedStatusIds,
+      priorities: selectedPriorityIds,
+      assigneeIds: selectedAssigneeIds
+    },
+    (state, action: FilterAction) => {
+      if (action.type === 'CLEAR') {
+        return { statusIds: [], priorities: [], assigneeIds: [] }
+      }
+      const keyMap: Record<string, 'statusIds' | 'priorities' | 'assigneeIds'> = {
+        statusId: 'statusIds',
+        priority: 'priorities',
+        assigneeId: 'assigneeIds'
+      }
+
+      const stateKey = keyMap[action.key]
+      if (!stateKey) return state
+
+      if (action.type === 'ADD') {
+        return state[stateKey].includes(action.id)
+          ? state
+          : { ...state, [stateKey]: [...state[stateKey], action.id] }
+      }
+
+      if (action.type === 'REMOVE') {
+        return {
+          ...state,
+          [stateKey]: state[stateKey].filter(id => id !== action.id)
+        }
+      }
+
+      return state
+    }
+  )
+
   const updateParam = (key: string, id: string) => {
-    const params = new URLSearchParams(searchParams)
-    const existing = params.getAll(key)
-    if (!existing.includes(id)) params.append(key, id)
-    router.replace(`/issues?${params.toString()}`)
+    startTransition(() => {
+      // Instantly apply UI changes
+      setOptimisticFilters({ type: 'ADD', key, id })
+
+      // Trigger actual URL navigation
+      const params = new URLSearchParams(searchParams.toString())
+      const existing = params.getAll(key)
+      if (!existing.includes(id)) params.append(key, id)
+      router.replace(`/issues?${params.toString()}`)
+    })
   }
 
   const deleteParam = (key: string, id: string) => {
-    const params = new URLSearchParams(searchParams)
-    const remaining = params.getAll(key).filter(pid => pid != id);
-    params.delete(key);
-    remaining.forEach(v => params.append(key, v))
-    router.replace(`/issues?${params.toString()}`)
+    startTransition(() => {
+      // Instantly apply UI changes
+      setOptimisticFilters({ type: 'REMOVE', key, id })
+
+      // Trigger actual URL navigation
+      const params = new URLSearchParams(searchParams.toString())
+      const remaining = params.getAll(key).filter(pid => pid !== id)
+      params.delete(key)
+      remaining.forEach(v => params.append(key, v))
+      router.replace(`/issues?${params.toString()}`)
+    })
   }
 
   const activeChips: FilterChipProps[] = [
-    ...selectedStatusIds.map(id => {
+    ...optimisticFilters.statusIds.map(id => {
       return {
         label: statuses.find(s => s.id === id)?.name || 'Unknown',
         onDismiss: () => deleteParam('statusId', id)
       }
     }),
-    ...selectedAssigneeIds.map(id => {
+    ...optimisticFilters.assigneeIds.map(id => {
       return {
         label: users.find(u => u.id === id)?.name || 'Unknown',
         onDismiss: () => deleteParam('assigneeId', id)
       }
     }),
-    ...selectedPriorityIds.map(id => {
+    ...optimisticFilters.priorities.map(id => {
       return {
         label: priorityDropdownOptions.find(p => p.id === id)?.label || 'Unknown',
         onDismiss: () => deleteParam('priority', id)
@@ -62,11 +116,17 @@ export default function FilterList({ statuses, users }: FilterBarProps) {
   ]
 
   const clearAll = () => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('statusId')
-    params.delete('priority')
-    params.delete('assigneeId')
-    router.replace(`/issues?${params.toString()}`)
+    startTransition(() => {
+      // Instantly apply UI changes
+      setOptimisticFilters({ type: 'CLEAR' })
+
+      // Trigger actual URL navigation
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('statusId')
+      params.delete('priority')
+      params.delete('assigneeId')
+      router.replace(`/issues?${params.toString()}`)
+    })
   }
 
   return (
@@ -86,19 +146,19 @@ export default function FilterList({ statuses, users }: FilterBarProps) {
       <div className="flex items-center gap-2">
         <FilterDropdown label="Status"
           options={statuses.map(s => ({ id: s.id, label: s.name }))}
-          selectedIds={selectedStatusIds}
+          selectedIds={optimisticFilters.statusIds}
           onSelect={(id) => updateParam('statusId', id)}
           onDeselect={(id) => deleteParam('statusId', id)} />
 
         <FilterDropdown label="Assignee"
           options={users.map(u => ({ id: u.id, label: u.name }))}
-          selectedIds={selectedAssigneeIds}
+          selectedIds={optimisticFilters.assigneeIds}
           onSelect={(id) => updateParam('assigneeId', id)}
           onDeselect={(id) => deleteParam('assigneeId', id)} />
 
         <FilterDropdown label="Priority"
           options={priorityDropdownOptions}
-          selectedIds={selectedPriorityIds}
+          selectedIds={optimisticFilters.priorities}
           onSelect={(id) => updateParam('priority', id)}
           onDeselect={(id) => deleteParam('priority', id)} />
       </div>
