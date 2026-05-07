@@ -1,17 +1,13 @@
 
 
 import IssuesList from "@/components/issues/IssuesList";
-import DetailsPanel from "@/components/layout/DetailsPanel";
-
-
 import { toArray } from '@/lib/utils/param';
 import { Priority } from "@/types";
-
 import NewIssueContainer from "@/components/issues/NewIssueContainer";
 import { Suspense } from "react";
 import { FilterBar } from "@/components/filters/FilterBar";
-import DetailsSkeleton from "@/components/ui/DetailsSkeleton";
-
+import DetailPanelShell from "@/components/layout/DetailPanelShell";
+import DetailsPanel from "@/components/layout/DetailsPanel";
 
 type IssuesPageProps = {
   searchParams: Promise<{
@@ -49,14 +45,10 @@ export default async function IssuesPage({ searchParams }:
       </Suspense>
 
     </div>
-    {issueId && <div className="h-full w-2/6 ml-4 p-4 border 
-        rounded-xl bg-[#3f3d38]" key={issueId}>
-      <Suspense fallback={<DetailsSkeleton />} key={issueId}>
-        <DetailsPanel issueId={issueId} />
-      </Suspense>
-    </div>
+    {issueId && <DetailPanelShell issueId={issueId} >
+      <DetailsPanel issueId={issueId} />
+    </DetailPanelShell>
     }
-
   </div>
 
 

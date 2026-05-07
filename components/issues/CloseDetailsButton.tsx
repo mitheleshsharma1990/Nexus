@@ -1,15 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter } from 'next/navigation'
-
-export default function CloseDetailsButton() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const handleClose = () => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('issueId')
-    router.push(`/issues?${params.toString()}`)
-  }
+export default function CloseDetailsButton({ handleClose }: { handleClose?: () => void }) {
   return (
     <button
       onClick={handleClose}
@@ -29,7 +20,5 @@ export default function CloseDetailsButton() {
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
       </svg>
     </button>
-
-
   )
 }

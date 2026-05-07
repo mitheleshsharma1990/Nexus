@@ -1,15 +1,13 @@
 
-
-
 import { Status, Priority } from "@/types"
-import CloseDetailsButton from "../issues/CloseDetailsButton";
 import StatusChip from "../ui/StatusChip";
 import PriorityChip from "../ui/PriorityChip";
 import { getIssueById } from "@/data/issue";
 import { getCommentsByIssueId } from "@/data/comments";
 
 
-export default async function DetailsPanel({ issueId }: { issueId: string }) {
+export default async function DetailsPanel({ issueId }:
+  { issueId: string }) {
   const [issue, comments] = await Promise.all([
     getIssueById(issueId),
     getCommentsByIssueId(issueId)
@@ -28,7 +26,6 @@ export default async function DetailsPanel({ issueId }: { issueId: string }) {
 
   return <>
     <h1 className="text-2xl font-bold mb-4">Issue Details</h1>
-    <CloseDetailsButton />
     <p className="text-lg font-semibold">{issue?.cycle?.name || 'No cycle assigned'}</p>
     <hr className="my-4 border-t border-gray-300" />
     <p className="text-gray-300 mb-2">{issue?.title}</p>
