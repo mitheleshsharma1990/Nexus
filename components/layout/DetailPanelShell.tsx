@@ -4,12 +4,15 @@ import { useState, useEffect, Suspense } from "react";
 import DetailsSkeleton from "@/components/ui/DetailsSkeleton";
 import { useSearchParams, useRouter } from "next/navigation";
 import CloseDetailsButton from "../issues/CloseDetailsButton";
-
+import { useNavigation } from '@/context/NavigationContext';
+import OptimisticIssueDetails from "@/components/issues/OptimisticIssueDetails";
 export default function DetailPanelShell({ issueId, children }: { issueId: string, children: React.ReactNode }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { optimisticIssue, endNavigation } = useNavigation()
+
   const handleClose = () => {
     setIsOpen(false);
     const params = new URLSearchParams(searchParams.toString());
@@ -18,6 +21,7 @@ export default function DetailPanelShell({ issueId, children }: { issueId: strin
   }
   useEffect(() => {
     setIsOpen(true)
+    endNavigation()
   }, [issueId])
 
   if (!isOpen) return null;
@@ -26,7 +30,7 @@ export default function DetailPanelShell({ issueId, children }: { issueId: strin
         rounded-xl bg-[#3f3d38]" key={issueId}>
     <CloseDetailsButton handleClose={handleClose} />
     <Suspense fallback={<DetailsSkeleton />}>
-      {children}
+      {optimisticIssue ? <OptimisticIssueDetails issue={optimisticIssue} /> : children}
     </Suspense>
   </div>
 }

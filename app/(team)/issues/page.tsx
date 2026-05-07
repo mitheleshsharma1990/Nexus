@@ -45,9 +45,11 @@ export default async function IssuesPage({ searchParams }:
       </Suspense>
 
     </div>
-    {issueId && <DetailPanelShell issueId={issueId} >
-      <DetailsPanel issueId={issueId} />
-    </DetailPanelShell>
+    {issueId && <Suspense fallback={<div>Loading...</div>}>
+      <DetailPanelShell issueId={issueId} >
+        <DetailsPanel issueId={issueId} />
+      </DetailPanelShell>
+    </Suspense>
     }
   </div>
 
