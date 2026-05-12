@@ -4,6 +4,7 @@ export type Option = {
 };
 
 export type FilterDropdownProps = {
+  name: string;
   label: string;
   options: Option[];
   selectedIds: string[];

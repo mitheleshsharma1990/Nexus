@@ -1,14 +1,15 @@
 
 
 import { IssueWithRelations } from "@/types";
-import { IssueDetails } from "../issues/IssueDetails";
+import { EditableIssueDetails } from "./EditableIssueDetails";
 
 export default function OptimisticIssueDetails({ issue }:
   { issue: IssueWithRelations | null }) {
 
 
   return <>
-    <IssueDetails issue={issue} />
+    <EditableIssueDetails issue={issue} cycleOptions={[]} statusOptions={[]}
+      assigneeOptions={[]} />
     <div className="mt-4">
       <h3 className="text-sm text-gray-400 mb-2">Comments</h3>
       <div className="flex flex-col gap-2">

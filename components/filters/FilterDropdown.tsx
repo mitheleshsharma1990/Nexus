@@ -6,7 +6,7 @@ import { FilterDropdownProps } from "@/types/filters"
 
 
 export default function FilterDropdown(
-  { label, options, selectedIds, onSelect, onDeselect }:
+  { name, label, options, selectedIds, onSelect, onDeselect }:
     FilterDropdownProps) {
 
   const [isOpen, setIsOpen] = useState(false);
@@ -26,7 +26,17 @@ export default function FilterDropdown(
 
 
   return <div ref={dropdownRef} className="relative">
-    <button onClick={() => setIsOpen(!isOpen)}
+    {
+      selectedIds.map(id => (
+        <input
+          key={id}
+          type="hidden"
+          name={name}
+          value={id}
+        />
+      ))
+    }
+    <button type="button" onClick={() => setIsOpen(!isOpen)}
       className={`flex items-center gap-2 px-3 py-1.5 text-sm 
           border rounded-md transition-colors
           ${count > 0
@@ -50,6 +60,7 @@ export default function FilterDropdown(
           options.map(option => {
             const isSelected = selectedIds.includes(option.id);
             return <button
+              type="button"
               key={option.id}
               onClick={() => isSelected ? onDeselect(option.id) : onSelect(option.id)}
               className="flex items-center gap-2.5 w-full px-3 py-2 

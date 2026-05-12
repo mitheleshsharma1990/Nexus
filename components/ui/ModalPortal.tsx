@@ -14,16 +14,19 @@ export default function ModalPortal({ children, onClose }: { children: React.Rea
   // Only render the portal if we are on the client
   return mounted
     ? createPortal(
+
       <div className="fixed inset-0 z-50 flex items-center justify-center">
 
         <div
-          className="absolute inset-0 bg-black/50"
+          className="absolute inset-0  bg-black/50"
           onClick={onClose}
-        />
+        >
+        </div>
         <div className="relative z-10 w-full max-w-lg">
           {children}
         </div>
       </div>
+
       , document.body)
     : null;
 }

@@ -10,6 +10,11 @@ export function isPriority(value: any): value is Priority {
   return PRIORITIES.includes(value);
 }
 
+export const priorityOptions = PRIORITIES.map((priority) => ({
+  id: priority,
+  name: priority.charAt(0).toUpperCase() + priority.slice(1), // Capitalizes the first letter
+}));
+
 export function addDelay<T>(promise: Promise<T>, delay: number): Promise<T> {
   return new Promise((resolve, reject) => {
     promise

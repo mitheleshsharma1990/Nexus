@@ -2,7 +2,6 @@
 
 import { Issue } from '@/types';
 import { ServerActionResult } from '@/lib/actions/types';
-import { isPriority } from '@/lib/utils/param';
 import { revalidatePath } from 'next/cache';
 import { issues } from '@/data/issue';
 export type CreateIssueInput = Pick<
@@ -42,21 +41,27 @@ export async function createIssue(
   return { success: true, data: newIssue };
 }
 
-export async function updateIssueStatus(
-  statusId: string,
-  issueId: string,
+export async function updateIssue(
+  issue: Omit<Issue, 'projectId' | 'createdAt' | 'dueDate'>,
 ): Promise<ServerActionResult<Issue>> {
-  if (issueId.trim() === '' || statusId.trim() === '') {
+  if (issue.id.trim() === '' || issue.statusId.trim() === '') {
     return { success: false, error: 'Missed required fields' };
   }
 
-  const issue = issues.find((issue) => issue.id === issueId);
-  if (!issue) {
+  const issueFound = issues.find((iss) => iss.id === issue.id);
+  if (!issueFound) {
     return { success: false, error: 'Issue not found' };
   }
-  issue.statusId = statusId;
+  issueFound.statusId = issue.statusId;
+  issueFound.title = issue.title;
+  issueFound.description = issue.description;
+  issueFound.statusId = issue.statusId;
+  issueFound.assigneeIds = issue.assigneeIds;
+  issueFound.cycleId = issue.cycleId;
+  issueFound.priority = issue.priority;
+
   revalidatePath('/issues');
-  return { success: true, data: issue };
+  return { success: true, data: issueFound };
 }
 
 export async function deleteIssue(

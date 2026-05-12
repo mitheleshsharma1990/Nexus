@@ -5,6 +5,9 @@ import { CreateIssueInput, createIssue } from "@/lib/actions/issues"
 import { Priority } from "@/types";
 import ModalPortal from "../ui/ModalPortal";
 import SubmitButton from "../ui/SubmitButton";
+import Dropdown from "../ui/Dropdown";
+import { priorityOptions } from "@/lib/utils/param"
+import FilterDropdown from "../filters/FilterDropdown"
 
 export default function NewIssueForm({ statuses, users, projectIds, cycleIds, onClose }: {
   statuses: { id: string, name: string }[],
@@ -16,11 +19,25 @@ export default function NewIssueForm({ statuses, users, projectIds, cycleIds, on
 
   const [error, setError] = useState<string>("");
 
+  const [selectedAssignees, setSelectedAssignees] = useState<{ id: string, name: string }[]>([])
+
+
+  const addAssignee = (id: string) => {
+    const assignee = users.find(user => user.id === id);
+    if (assignee) setSelectedAssignees([...selectedAssignees, assignee])
+  }
+
+  const removeAssignee = (id: string) => {
+    const updatedAssignee = selectedAssignees.filter(ass => ass.id !== id);
+    setSelectedAssignees(updatedAssignee)
+  }
+
   useEffect(() => {
     if (!error) return;
     const timer = setTimeout(() => setError(""), 1000);
     return () => clearTimeout(timer);
   }, [error])
+
   const formAction = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -70,7 +87,7 @@ export default function NewIssueForm({ statuses, users, projectIds, cycleIds, on
 
         {/* Title */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="title" className="text-sm font-medium text-emerald-100/70">Title</label>
+          <label htmlFor="title" className="text-sm font-medium text-emerald-100/70">Title*</label>
           <input
             type="text" name="title" id="title"
             className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -88,50 +105,24 @@ export default function NewIssueForm({ statuses, users, projectIds, cycleIds, on
 
         {/* Two-Column Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="priority" className="text-sm font-medium text-emerald-100/70">Priority</label>
-            <select name="priority" id="priority" className="bg-[#1a3a2d] border border-white/10 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="statusId" className="text-sm font-medium text-emerald-100/70">Status</label>
-            <select name="statusId" className="bg-[#1a3a2d] border border-white/10 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-              <option value="">Select Status</option>
-              {statuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
+          <Dropdown label="Priority" options={priorityOptions} name="priority" required={false} />
+          <Dropdown label="Status" options={statuses} name="statusId" required={true} />
         </div>
 
         {/* Assignees (Multi-select) */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="assigneeIds" className="text-sm font-medium text-emerald-100/70">Assignees</label>
-          <select name="assigneeIds" multiple className="bg-white/5 border border-white/10 rounded-lg p-2 h-24 focus:ring-2 focus:ring-emerald-500 bg-[#1a3a2d] outline-none text-sm">
-            {users.map(u => <option key={u.id} value={u.id} className="p-1">{u.name}</option>)}
-          </select>
+          <FilterDropdown label="Assignees"
+            name="assigneeIds"
+            options={users.map(s => ({ id: s.id, label: s.name }))}
+            selectedIds={selectedAssignees.map(s => s.id)}
+            onSelect={(id) => addAssignee(id)}
+            onDeselect={(id) => removeAssignee(id)} />
         </div>
 
         {/* Project & Cycle */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="projectId" className="text-sm font-medium text-emerald-100/70">Project</label>
-            <select name="projectId" className="bg-[#1a3a2d] border border-white/10 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-              <option value="">Select Project</option>
-              {projectIds.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="cycleId" className="text-sm font-medium text-emerald-100/70">Cycle</label>
-            <select name="cycleId" className="bg-[#1a3a2d] border border-white/10 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none">
-              <option value="">Select Cycle</option>
-              {cycleIds?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
+          <Dropdown label="Project" options={projectIds} name="projectId" required={true} />
+          <Dropdown label="Cycle" options={cycleIds || []} name="cycleId" required={false} />
         </div>
       </div>
 
